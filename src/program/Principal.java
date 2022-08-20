@@ -4,11 +4,17 @@
  */
 package program;
 
+import javax.swing.*;
+import java.sql.*;
+
 /**
  *
  * @author joaoc
  */
 public class Principal extends javax.swing.JFrame {
+    public Connection conn;
+    public Statement stmt;
+    public ResultSet rs;
 
     /**
      * Creates new form Principal
@@ -34,7 +40,7 @@ public class Principal extends javax.swing.JFrame {
         lblNome = new javax.swing.JLabel();
         lblDescricao = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        btnInserir = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
         jButton5 = new javax.swing.JButton();
@@ -46,6 +52,11 @@ public class Principal extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(10, 10));
         setPreferredSize(new java.awt.Dimension(384, 500));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
 
         txtDescricao.setColumns(20);
         txtDescricao.setRows(5);
@@ -67,7 +78,12 @@ public class Principal extends javax.swing.JFrame {
             }
         });
 
-        jButton2.setText("Inserir");
+        btnInserir.setText("Inserir");
+        btnInserir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnInserirActionPerformed(evt);
+            }
+        });
 
         jButton3.setText("Remover");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
@@ -77,6 +93,11 @@ public class Principal extends javax.swing.JFrame {
         });
 
         jButton4.setText("Atualizar");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
 
         jButton5.setText("<< Primeiro");
         jButton5.addActionListener(new java.awt.event.ActionListener() {
@@ -86,10 +107,25 @@ public class Principal extends javax.swing.JFrame {
         });
 
         jButton6.setText("< Anterior");
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
+            }
+        });
 
         jButton7.setText("Próximo >");
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton7ActionPerformed(evt);
+            }
+        });
 
         jButton8.setText("Último >>");
+        jButton8.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton8ActionPerformed(evt);
+            }
+        });
 
         lblTitulo.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         lblTitulo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -106,7 +142,7 @@ public class Principal extends javax.swing.JFrame {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addComponent(jScrollPane1)
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                            .addComponent(jButton2)
+                            .addComponent(btnInserir)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                             .addComponent(jButton3)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -151,7 +187,7 @@ public class Principal extends javax.swing.JFrame {
                 .addComponent(jButton1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton2)
+                    .addComponent(btnInserir)
                     .addComponent(jButton3)
                     .addComponent(jButton4))
                 .addGap(36, 36, 36)
@@ -168,15 +204,171 @@ public class Principal extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+        txtSigla.setText("");
+        txtNome.setText("");
+        txtDescricao.setText("");
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
+        String query1 = "DELETE FROM curso WHERE(sigla=";
+        String a = txtSigla.getText();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost/dbfaculdade",
+                    "root", "123456");
+            stmt = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            String sql = query1 + "'" + txtSigla.getText() + "')";
+            JOptionPane.showMessageDialog(null, sql);
+            int i = 0;
+            i = stmt.executeUpdate(sql); //executando o comando sql
+            stmt.close();
+            if (i > 0) {
+                JOptionPane.showMessageDialog(null, "Curso deletado com sucesso!");
+                // limpando campos
+                txtSigla.setText("");
+                txtNome.setText("");
+                txtDescricao.setText("");
+                abreTabela();
+            }
+        } catch (ClassNotFoundException e) {
+            System.out.println(e);
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
         // TODO add your handling code here:
+        try {
+            rs.first();
+            atualiza_campos();
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
     }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void btnInserirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInserirActionPerformed
+        // TODO add your handling code here:
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost/dbfaculdade","root", "123456");
+            stmt = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_UPDATABLE);
+            /*String sql = "INSERT INTO curso VALUES(‘"
+                    + txtSigla.getText() + "’,’"
+                    + txtNome.getText() + "’,’"
+                    + txtDescricao.getText() + "’)";*/
+            String sql = "INSERT INTO curso VALUES('"
+                    + txtSigla.getText() + "','"
+                    + txtNome.getText() + "','"
+                    + txtDescricao.getText() + "')";
+            JOptionPane.showMessageDialog(null, sql);
+            int i = 0;
+            i = stmt.executeUpdate(sql);//executando o comando sql
+            stmt.close();
+            if (i > 0) {
+                JOptionPane.showMessageDialog(null, "Curso cadastrado com sucesso!");
+                abreTabela();
+            }
+        } catch (ClassNotFoundException e) {
+            System.out.println(e);
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+
+    }//GEN-LAST:event_btnInserirActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        // TODO add your handling code here:
+        String query1 = "UPDATE curso SET sigla=";
+        String a = txtSigla.getText();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost/dbfaculdade",
+                    "root", "123456");
+            stmt = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            String sql = query1 + "'" + txtSigla.getText() + "',"
+                    + "nome='" + txtNome.getText() + "',"
+                    + "descricao='" + txtDescricao.getText()
+                    + "' where sigla=" + "'" + txtSigla.getText() + "'";
+            JOptionPane.showMessageDialog(null, sql);
+            int i = 0;
+            i = stmt.executeUpdate(sql);//executando o comando sql
+            int y = 0;
+            stmt.close();
+            y = stmt.CLOSE_CURRENT_RESULT;
+            if (i > 0) {
+                JOptionPane.showMessageDialog(null, "Curso alterado com sucesso!");
+                abreTabela();
+            }
+        } catch (ClassNotFoundException e) {
+            System.out.println(e);
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+        // TODO add your handling code here:
+        try {
+            rs.previous();
+            atualiza_campos();
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+    }//GEN-LAST:event_jButton6ActionPerformed
+
+    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
+        // TODO add your handling code here:
+        try {
+            rs.next();
+            atualiza_campos();
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+    }//GEN-LAST:event_jButton7ActionPerformed
+
+    private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
+        // TODO add your handling code here:
+        try {
+            rs.last();
+            atualiza_campos();
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+    }//GEN-LAST:event_jButton8ActionPerformed
+
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        // TODO add your handling code here:
+        abreTabela();
+    }//GEN-LAST:event_formWindowOpened
+
+    public void atualiza_campos() {
+        try {
+            txtSigla.setText("" + rs.getString("sigla"));
+            txtNome.setText("" + rs.getString("Nome")); //
+            txtDescricao.setText("" + rs.getString("descricao"));
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+    }
+
+    public void abreTabela() {
+        String query1 = "Select * from curso";
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost/dbfaculdade", "root", "123456");
+            stmt = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_READ_ONLY);
+            rs = stmt.executeQuery(query1);//executando o comando sql
+            rs.first();//estamos movendo o cursor para o primeiro registro pesquisado
+            atualiza_campos();
+            //conteudo da coluna sigla
+        } catch (ClassNotFoundException e) {
+            System.out.println(e);
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+    }
 
     /**
      * @param args the command line arguments
@@ -214,8 +406,8 @@ public class Principal extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnInserir;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
